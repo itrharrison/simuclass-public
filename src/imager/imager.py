@@ -14,7 +14,7 @@ def runCASAClean(config, parameter_filename):
     pickle.dump(config, open(temp_dir + "/temp_config.p", "wb"))
 
     casa_exe = config.get("pipeline", "casa_exe")
-    cmd = "{3} --nogui --log2term -c {0}/imager/casa_imager.py {1}/{2}".format(
+    cmd = "{3} --nogui --log2term -c {0}/src/imager/casa_imager.py {1}/{2}".format(
         run_dir, temp_dir, "temp_config.p", casa_exe
     )
     os.system(cmd)

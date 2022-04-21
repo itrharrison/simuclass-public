@@ -132,15 +132,15 @@ if __name__ == "__main__":
 
     sm.predict(imagename=imagename)
 
-    if config.get("observation", "noisemode") == "uniform":
+    if config.get("observation", "noise_mode") == "uniform":
         sm.setnoise(
             mode="simplenoise",
             simplenoise=config.get("observation", "uniform_noise") + "Jy",
         )
         sm.corrupt()
-    elif config.get("observation", "noisemode") == "none":
+    elif config.get("observation", "noise_mode") == "none":
         pass
-    elif config.get("observation", "noisemode") == "real":
+    elif config.get("observation", "noise_mode") == "real":
         rms_noise_list = pickle.load(
             open(config.get("observation", "noise_filepath"), "rb")
         )
