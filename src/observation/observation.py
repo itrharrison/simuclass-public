@@ -12,13 +12,11 @@ def runSimulateData(config):
 
     os.chdir(config.get("pipeline", "output_dirname"))
     temp_dir = os.getcwd()
+    config.set("pipeline", "run_dir", os.path.dirname(os.path.abspath(__file__)))
     pickle.dump(config, open(temp_dir + "/temp_config.p", "wb"))
 
-    if not os.path.isfile(temp_dir + "emerlin_antenna.py"):
-        os.system("cp " + run_dir + "/antenna_files/*.py " + temp_dir)
-
     casa_exe = config.get("pipeline", "casa_exe")
-    cmd = "{3} --nogui --log2term -c {0}/simulatedata/simdata.py {1}/{2}".format(
+    cmd = "{3} --nogui --log2term -c {0}/src/observation/observation.py {1}/{2}".format(
         run_dir, temp_dir, "temp_config.p", casa_exe
     )
     print (cmd)
@@ -29,10 +27,13 @@ def runSimulateData(config):
 
 if __name__ == "__main__":
 
+
+    config = pickle.load(open(sys.argv[-1], "rb"))
+
+    sys.path.append(config.get('pipeline', 'run_dir'))
     from emerlin_antenna import *
     from vla_antenna import *
 
-    config = pickle.load(open(sys.argv[-1], "rb"))
     n_ifs = config.getint("observation", "n_IFs")
     bw = config.getfloat("observation", "total_bandwidth")
     base_freq = config.getfloat("observation", "lowest_frequency")
@@ -43,7 +44,7 @@ if __name__ == "__main__":
 
     if_width = bw / n_ifs
 
-    if config.get("observation", "uvcoverage") == "simulate":
+    if config.get("observation", "uvcoverage_type") == "simulate":
         msname = config.get("pipeline", "output_suffix") + ".ms"
         msname = os.path.join(output_path, msname)
         print ("making uv coverage! \n at {0}".format(msname))
