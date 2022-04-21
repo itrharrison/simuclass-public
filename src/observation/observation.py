@@ -8,7 +8,7 @@ import ConfigParser
 
 def runSimulateData(config):
 
-    run_dir = os.getcwd()
+    run_dir = config.get("pipeline", "simuclass_dirname")
 
     os.chdir(config.get("pipeline", "output_dirname"))
     temp_dir = os.getcwd()

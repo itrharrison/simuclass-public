@@ -7,7 +7,7 @@ from astropy.io import fits
 
 def runCASAClean(config, parameter_filename):
 
-    run_dir = os.getcwd()
+    run_dir = config.get("pipeline", "simuclass_dirname")
 
     os.chdir(config.get("pipeline", "output_dirname"))
     temp_dir = os.getcwd()
