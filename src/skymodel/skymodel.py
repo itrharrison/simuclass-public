@@ -21,6 +21,7 @@ from numpy.core.defchararray import add as stradd
 from numpy.core.defchararray import multiply as strmultiply
 import pdb
 import sys
+import os
 import ConfigParser
 import time
 import cPickle as pickle
@@ -59,14 +60,14 @@ def runSkyModel(config):
     fov = config.getfloat("skymodel", "field_of_view") * galsim.arcmin
     image_size = int((fov / galsim.arcmin) / (pixel_scale / galsim.arcmin))
 
-    ra_field = config.get("skymodel", "field_ra")
+    ra_field = config.get("observation", "field_ra")
     ra_field_gs = galsim.HMS_Angle(ra_field)
-    dec_field = config.get("skymodel", "field_dec")
+    dec_field = config.get("observation", "field_dec")
     dec_field_gs = galsim.DMS_Angle(dec_field)
 
-    ra_survey = config.get("skymodel", "survey_ra")
+    ra_survey = config.get("observation", "survey_ra")
     ra_survey_gs = galsim.HMS_Angle(ra_survey)
-    dec_survey = config.get("skymodel", "survey_dec")
+    dec_survey = config.get("observation", "survey_dec")
     dec_survey_gs = galsim.DMS_Angle(dec_survey)
 
     w_twod = setup_wcs(config, ndim=2)
@@ -90,7 +91,7 @@ def runSkyModel(config):
         cat_file_name = config.get("skymodel", "catalogue_filepath")
         print("Loading catalogue from {0} ...".format(cat_file_name))
         cat = Table()
-        if config.get("skymodel", "type") == "trecs":
+        if config.get("skymodel", "catalogue_type") == "trecs":
             cat_read = Table.read(cat_file_name, format="ascii")
 
             source_prefix = "TRECS-"
@@ -166,7 +167,7 @@ def runSkyModel(config):
             cat["PA"] = 0.5 * np.arctan2(cat["e2"], cat["e1"])
             cat["PA"].unit = "rad"
 
-        elif config.get("skymodel", "type") == "pybdsm":
+        elif config.get("skymodel", "catalogue_type") == "pybdsf":
             cat_read = Table.read(cat_file_name, format="fits")
 
             cat["Source_id"] = cat_read["Source_id"]
@@ -393,19 +394,6 @@ def runSkyModel(config):
 
             gal = gal.shear(total_shear)
             gal = gal.dilate(maj_gal / maj_corr_gal)
-
-            if config.getboolean("skymodel", "dosimple_psf"):
-                psf_maj = config.getfloat("skymodel", "simple_psf_maj") * galsim.arcsec
-                psf_min = config.getfloat("skymodel", "simple_psf_min") * galsim.arcsec
-                psf_pa = (
-                    config.getfloat("skymodel", "simple_psf_pa") - 90.0
-                ) * galsim.degrees
-                q = (psf_min / galsim.arcsec) / (psf_maj / galsim.arcsec)
-                psf = galsim.Gaussian(fwhm=psf_maj / galsim.arcsec)
-                psf_shear = galsim.Shear(q=q, beta=psf_pa)
-                psf = psf.shear(psf_shear)
-
-                gal = galsim.Convolve(gal, psf)
 
             x, y = w_twod.wcs_world2pix(cat_gal["RA"], cat_gal["DEC"], 0,)
             x = float(x)
@@ -689,7 +677,9 @@ def runSkyModel(config):
 
     # Extract the numpy array from the galsim image
     image_data = full_image.array
-
+    
+    hdu = fits.PrimaryHDU(np.expand_dims(np.expand_dims(image_data, axis=0), axis=0), header=header_fourd)
+    
     hdulist = fits.HDUList([hdu])
     hdulist.writeto(os.path.join(output_path, output_image_filename), clobber=True)
 
