@@ -291,7 +291,9 @@ def runSkyModel(config):
 
         # write out catalogue
 
-        output_filename = "truthcat" + config.get("pipeline", "output_suffix") + ".fits"
+        output_filename = (
+            "truthcat" + "_" + config.get("pipeline", "output_suffix") + ".fits"
+        )
 
         print("Writing truthcat to " + os.path.join(output_path, output_filename))
         cat.write(
@@ -542,7 +544,7 @@ def runSkyModel(config):
         # write out catalogue
 
         output_filename = (
-            "agn_truthcat" + config.get("pipeline", "output_suffix") + ".fits"
+            "agn_truthcat" + "_" + config.get("pipeline", "output_suffix") + ".fits"
         )
 
         print("Writing truthcat to " + os.path.join(output_path, output_filename))
@@ -677,9 +679,11 @@ def runSkyModel(config):
 
     # Extract the numpy array from the galsim image
     image_data = full_image.array
-    
-    hdu = fits.PrimaryHDU(np.expand_dims(np.expand_dims(image_data, axis=0), axis=0), header=header_fourd)
-    
+
+    hdu = fits.PrimaryHDU(
+        np.expand_dims(np.expand_dims(image_data, axis=0), axis=0), header=header_fourd
+    )
+
     hdulist = fits.HDUList([hdu])
     hdulist.writeto(os.path.join(output_path, output_image_filename), clobber=True)
 

@@ -27,10 +27,9 @@ def runSimulateData(config):
 
 if __name__ == "__main__":
 
-
     config = pickle.load(open(sys.argv[-1], "rb"))
 
-    sys.path.append(config.get('pipeline', 'run_dir'))
+    sys.path.append(config.get("pipeline", "run_dir"))
     from emerlin_antenna import *
     from vla_antenna import *
 

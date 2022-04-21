@@ -13,7 +13,7 @@ if __name__ == "__main__":
     msname = config.get("observation", "uvcoverage_filename")
     suffix = config.get("pipeline", "output_suffix")
 
-    imagename = msname + suffix + ".tclean"
+    imagename = msname + "_" + suffix + ".tclean"
     npix = config.getfloat("imager", "npix")
     pixel_scale = config.getfloat("imager", "pixel_scale")
     niter_value = config.getint("imager", "number_of_iterations")
