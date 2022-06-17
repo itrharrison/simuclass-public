@@ -200,7 +200,7 @@ def runSkyModel(config):
             cat["Peak_flux"].unit = "Jy"
 
             cat["q"] = cat_read["Min"] / cat_read["Maj"]
-            cat["PA"] = (cat_read["PA"] * uns.deg).to(uns.rad).value
+            cat["PA"] = (cat_read["PA"]).to(uns.rad).value
             cat["PA"].unit = "rad"
             cat["mod_e"] = (1.0 - cat["q"] ** 2.0) / (1.0 + cat["q"] ** 2.0)
 
