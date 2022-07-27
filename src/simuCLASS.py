@@ -22,7 +22,15 @@ if config.getboolean("pipeline", "dosimdata"):
     runSimulateData(config)
 
 if config.getboolean("pipeline", "doimagedata"):
-    from imager.imager import runCASAClean
 
-    print("Running imager...")
-    runCASAClean(config, sys.argv[1])
+    if config.get("imager", "imager_type") == 'wsclean':
+
+        from imager.imager import runWsclean as runImager
+        print("Running wsclean imager...")
+
+    else:
+
+        from imager.imager import runCASAClean as runImager
+        print("Running CASA tclean imager...")
+
+    runImager(config, sys.argv[1])
