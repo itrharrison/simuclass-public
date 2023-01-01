@@ -189,6 +189,7 @@ if __name__ == "__main__":
                     simplenoise=config.get("observation", "uniform_noise") + "Jy",
                 )
                 sm.corrupt()
+                sm.done()
             elif config.get("observation", "noise_mode") == "none":
                 pass
             elif config.get("observation", "noise_mode") == "real":
