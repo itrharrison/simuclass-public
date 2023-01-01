@@ -10,7 +10,7 @@ if __name__ == "__main__":
 
     outdir = config.get("pipeline", "output_dirname")
     msdir = config.get("observation", "uvcoverage_dirname")
-    msname = config.get("observation", "uvcoverage_filename")
+    msname_list = config.get("observation", "uvcoverage_filename").split(',')
     suffix = config.get("pipeline", "output_suffix")
 
     imagename = msname + "_" + suffix + ".tclean"
@@ -33,31 +33,32 @@ if __name__ == "__main__":
     export_only = config.getboolean("imager", "export_only")
     restbeam = [beam_maj + "arcsec", beam_min + "arcsec", beam_pa + "deg"]
 
-    if not export_only:
-        tclean(
-            vis=os.path.join(msdir, msname),
-            imagename=os.path.join(outdir, imagename),
-            threshold=threshold,
-            niter=niter_value,
-            imsize=[int(npix), int(npix)],
-            cell=cell_size,
-            deconvolver=deconvolver,
-            scales=scales,
-            nterms=nterms,
-            weighting=weighting,
-            pbcor=pbcor,
-            pblimit=0.00001,
-            reffreq=reffreq,
+    for msname in msname_list:
+        if not export_only:
+            tclean(
+                vis=os.path.join(msdir, msname),
+                imagename=os.path.join(outdir, imagename),
+                threshold=threshold,
+                niter=niter_value,
+                imsize=[int(npix), int(npix)],
+                cell=cell_size,
+                deconvolver=deconvolver,
+                scales=scales,
+                nterms=nterms,
+                weighting=weighting,
+                pbcor=pbcor,
+                pblimit=0.00001,
+                reffreq=reffreq,
+            )
+
+        exportfits(
+            imagename=os.path.join(outdir, imagename + ".image.tt0"),
+            fitsimage=os.path.join(outdir, imagename + ".image.tt0.fits"),
+            overwrite=True,
         )
 
-    exportfits(
-        imagename=os.path.join(outdir, imagename + ".image.tt0"),
-        fitsimage=os.path.join(outdir, imagename + ".image.tt0.fits"),
-        overwrite=True,
-    )
-
-    exportfits(
-        imagename=os.path.join(outdir, imagename + ".residual.tt0"),
-        fitsimage=os.path.join(outdir, imagename + ".residual.tt0.fits"),
-        overwrite=True,
-    )
+        exportfits(
+            imagename=os.path.join(outdir, imagename + ".residual.tt0"),
+            fitsimage=os.path.join(outdir, imagename + ".residual.tt0.fits"),
+            overwrite=True,
+        )
