@@ -43,9 +43,15 @@ if __name__ == "__main__":
 
     if_width = bw / n_ifs
 
+    fitsimage = config.get("observation", "image_filepath")
+    imagename = fitsimage.replace(".fits", ".im")
+
+    importfits(fitsimage=fitsimage, imagename=imagename, overwrite=True)
+
     if config.get("observation", "uvcoverage_type") == "simulate":
         msname = config.get("pipeline", "output_suffix") + ".ms"
         msname = os.path.join(output_path, msname)
+        msname_list = [msname]
         print ("making uv coverage! \n at {0}".format(msname))
         sm.open(msname)
         for i in np.arange(1, n_ifs + 1):
@@ -118,62 +124,108 @@ if __name__ == "__main__":
                 starttime="0s",
                 stoptime=config.get("observation", "observation_time") + "s",
             )
+
+        sm.predict(imagename=imagename)
+
+        if config.get("observation", "noise_mode") == "uniform":
+            sm.setnoise(
+                mode="simplenoise",
+                simplenoise=config.get("observation", "uniform_noise") + "Jy",
+            )
+            sm.corrupt()
+        elif config.get("observation", "noise_mode") == "none":
+            pass
+        elif config.get("observation", "noise_mode") == "real":
+            rms_noise_list = pickle.load(
+                open(config.get("observation", "noise_filepath"), "rb")
+            )
+            for bl_spw in rms_noise_list:
+                sm.openfromms(msname)
+                # this_selection = {'baseline' : bl_spw[0], 'spw': bl_spw[1]}
+                print bl_spw
+                ant1 = bl_spw[0].split("&")[0]
+                ant2 = bl_spw[0].split("&")[1]
+
+                # CASA antenna naming schemes are horrible and inconsistent!
+                # Convert from Antenna 'Name' to 'ID'
+                ant1 = ant1.replace("1", "0")
+                ant1 = ant1.replace("2", "1")
+                ant1 = ant1.replace("5", "4")
+                ant1 = ant1.replace("6", "5")
+                ant1 = ant1.replace("7", "6")
+                ant1 = ant1.replace("8", "7")
+                ant1 = ant1.replace("9", "8")
+
+                ant2 = ant2.replace("1", "0")
+                ant2 = ant2.replace("2", "1")
+                ant2 = ant2.replace("5", "4")
+                ant2 = ant2.replace("6", "5")
+                ant2 = ant2.replace("7", "6")
+                ant2 = ant2.replace("8", "7")
+                ant2 = ant2.replace("9", "8")
+
+                this_selection = "ANTENNA1=={0} and ANTENNA2=={1}".format(ant1, ant2)
+                this_rms = rms_noise_list[bl_spw]
+                print this_selection
+                print bl_spw[1]
+                print str(this_rms) + "Jy"
+                sm.setdata(spwid=int(bl_spw[1]), msselect=this_selection)
+                sm.setnoise(mode="simplenoise", simplenoise=str(this_rms) + "Jy")
+                sm.corrupt()
+                sm.done()
+
     else:
         print ("loading uv coverage!")
         msdir = config.get("observation", "uvcoverage_dirname")
-        msname = config.get("observation", "uvcoverage_filename")
-        sm.openfromms(os.path.join(msdir, msname))
+        msname_list = config.get("observation", "uvcoverage_filename").split(',')
 
-    fitsimage = config.get("observation", "image_filepath")
-    imagename = fitsimage.replace(".fits", ".im")
+        for msname in msname_list:
+            sm.openfromms(os.path.join(msdir, msname))
+            sm.predict(imagename=imagename)
 
-    importfits(fitsimage=fitsimage, imagename=imagename, overwrite=True)
+            if config.get("observation", "noise_mode") == "uniform":
+                sm.setnoise(
+                    mode="simplenoise",
+                    simplenoise=config.get("observation", "uniform_noise") + "Jy",
+                )
+                sm.corrupt()
+            elif config.get("observation", "noise_mode") == "none":
+                pass
+            elif config.get("observation", "noise_mode") == "real":
+                rms_noise_list = pickle.load(
+                    open(config.get("observation", "noise_filepath"), "rb")
+                )
+                for bl_spw in rms_noise_list:
+                    sm.openfromms(msname)
+                    # this_selection = {'baseline' : bl_spw[0], 'spw': bl_spw[1]}
+                    print bl_spw
+                    ant1 = bl_spw[0].split("&")[0]
+                    ant2 = bl_spw[0].split("&")[1]
 
-    sm.predict(imagename=imagename)
+                    # CASA antenna naming schemes are horrible and inconsistent!
+                    # Convert from Antenna 'Name' to 'ID'
+                    ant1 = ant1.replace("1", "0")
+                    ant1 = ant1.replace("2", "1")
+                    ant1 = ant1.replace("5", "4")
+                    ant1 = ant1.replace("6", "5")
+                    ant1 = ant1.replace("7", "6")
+                    ant1 = ant1.replace("8", "7")
+                    ant1 = ant1.replace("9", "8")
 
-    if config.get("observation", "noise_mode") == "uniform":
-        sm.setnoise(
-            mode="simplenoise",
-            simplenoise=config.get("observation", "uniform_noise") + "Jy",
-        )
-        sm.corrupt()
-    elif config.get("observation", "noise_mode") == "none":
-        pass
-    elif config.get("observation", "noise_mode") == "real":
-        rms_noise_list = pickle.load(
-            open(config.get("observation", "noise_filepath"), "rb")
-        )
-        for bl_spw in rms_noise_list:
-            sm.openfromms(msname)
-            # this_selection = {'baseline' : bl_spw[0], 'spw': bl_spw[1]}
-            print bl_spw
-            ant1 = bl_spw[0].split("&")[0]
-            ant2 = bl_spw[0].split("&")[1]
+                    ant2 = ant2.replace("1", "0")
+                    ant2 = ant2.replace("2", "1")
+                    ant2 = ant2.replace("5", "4")
+                    ant2 = ant2.replace("6", "5")
+                    ant2 = ant2.replace("7", "6")
+                    ant2 = ant2.replace("8", "7")
+                    ant2 = ant2.replace("9", "8")
 
-            # CASA antenna naming schemes are horrible and inconsistent!
-            # Convert from Antenna 'Name' to 'ID'
-            ant1 = ant1.replace("1", "0")
-            ant1 = ant1.replace("2", "1")
-            ant1 = ant1.replace("5", "4")
-            ant1 = ant1.replace("6", "5")
-            ant1 = ant1.replace("7", "6")
-            ant1 = ant1.replace("8", "7")
-            ant1 = ant1.replace("9", "8")
-
-            ant2 = ant2.replace("1", "0")
-            ant2 = ant2.replace("2", "1")
-            ant2 = ant2.replace("5", "4")
-            ant2 = ant2.replace("6", "5")
-            ant2 = ant2.replace("7", "6")
-            ant2 = ant2.replace("8", "7")
-            ant2 = ant2.replace("9", "8")
-
-            this_selection = "ANTENNA1=={0} and ANTENNA2=={1}".format(ant1, ant2)
-            this_rms = rms_noise_list[bl_spw]
-            print this_selection
-            print bl_spw[1]
-            print str(this_rms) + "Jy"
-            sm.setdata(spwid=int(bl_spw[1]), msselect=this_selection)
-            sm.setnoise(mode="simplenoise", simplenoise=str(this_rms) + "Jy")
-            sm.corrupt()
-            sm.done()
+                    this_selection = "ANTENNA1=={0} and ANTENNA2=={1}".format(ant1, ant2)
+                    this_rms = rms_noise_list[bl_spw]
+                    print this_selection
+                    print bl_spw[1]
+                    print str(this_rms) + "Jy"
+                    sm.setdata(spwid=int(bl_spw[1]), msselect=this_selection)
+                    sm.setnoise(mode="simplenoise", simplenoise=str(this_rms) + "Jy")
+                    sm.corrupt()
+                    sm.done()
