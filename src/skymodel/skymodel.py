@@ -156,7 +156,7 @@ def runSkyModel(config):
 
             cat["mod_e"] = np.sqrt(cat["e1"] ** 2.0 + cat["e2"] ** 2.0)
 
-            cat["q"] = q_obs = (1.0 - cat["mod_e"] ** 2.0) / (1.0 + cat["mod_e"] ** 0.2)
+            cat["q"] = (1.0 - cat["mod_e"] ** 2.0) / (1.0 + cat["mod_e"] ** 0.2)
 
             cat["Min"] = cat["Maj"] * cat["q"]
             cat["Min"].unit = "arcsec"
@@ -184,10 +184,10 @@ def runSkyModel(config):
             cat["Total_flux"] = cat_read["Total_flux"]  # Jy
             cat["Total_flux"].unit = "Jy"
 
-            cat["Maj"] = cat_read["Maj"] * degtoarcsec  # deg
+            cat["Maj"] = cat_read["Maj"] * degtoarcsec  # Maj: the FWHM of the major axis of the source, in degrees
             cat["Maj"].unit = "arcsec"
 
-            cat["Maj_halflight"] = 0.5 * cat["Maj"]
+            cat["Maj_halflight"] = 0.5 * cat["Maj"] # for Gaussian FWHM = 2 * HLR
             cat["Maj_halflight"].unit = "arcsec"
 
             cat["Min"] = cat_read["Min"] * degtoarcsec  # deg
